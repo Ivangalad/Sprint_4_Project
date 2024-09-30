@@ -2,6 +2,7 @@
 TripleTen Sprint 4 Project for Software Development Tools
 
 The purpose of this project is to demonstrate the ability to show analytical data on a website, using streamlit, GitHub and Render. 
+It shows 8 charts about car sales listings and prices by paint color and model year.
 
 app.py is the file that executes the site, using streamlit. it requires the presence of vehicles_us.csv to operate.
 the \notebooks folder contains a Jupyter notebook where the EDA was performed, to develop the contents of app.py.
