@@ -11,22 +11,32 @@ import plotly.express as px
 car_df = pd.read_csv('vehicles_us.csv')
 
 # Clean up data
-car_df['model_year'] = car_df['model_year'].fillna(1).astype('int64')
-car_df['cylinders'] = car_df['cylinders'].fillna(1).astype('int64')
-car_df['odometer'] = car_df['odometer'].fillna(-1).astype('int64')
+
+car_df['model_year'] = car_df.groupby('model')['model_year'].transform(lambda x: x.fillna(x.median())) #Fill model year nulls with median year by model 
+car_df['model_year'] = car_df['model_year'].astype('int')
+
+car_df['cylinders'] = car_df.groupby('model')['cylinders'].transform(lambda x: x.fillna(x.median()))
+car_df['cylinders'] = car_df['cylinders'].astype('int')
+
+car_df['odometer'] = car_df.groupby(['model_year'])['odometer'].transform(lambda x: x.fillna(x.median()))
+car_df['odometer'] = car_df['odometer'].fillna(car_df[car_df['model'] == 'ford f-150']['odometer'].median()).astype('int') #One null required special treatment
+
 car_df['paint_color'] = car_df['paint_color'].fillna('unlisted')
+
 car_df['is_4wd'] = car_df['is_4wd'].fillna(0).astype('int64')
 
-# Slice DataFrames by model year
-car_df['make'] = car_df['model'].str.split().str[0]
+#This is old preprocessing
+#car_df['model_year'] = car_df['model_year'].fillna(1).astype('int64') 
+#car_df['cylinders'] = car_df['cylinders'].fillna(1).astype('int64')
+#car_df['odometer'] = car_df['odometer'].fillna(-1).astype('int64')
+#car_df['paint_color'] = car_df['paint_color'].fillna('unlisted')
+#car_df['is_4wd'] = car_df['is_4wd'].fillna(0).astype('int64')
 
-old_car_df = car_df.loc[car_df['model_year'] < 1960]
-
-muscle_car_df = car_df.loc[(car_df['model_year'] >= 1960) & (car_df['model_year'] < 1980)]
-
-pre_new_car_df = car_df.loc[(car_df['model_year'] >= 1980) & (car_df['model_year'] < 2000)]
-
-new_car_df = car_df.loc[car_df['model_year'] >= 2000]
+# Slice DataFrames by model year, cut out low price values
+old_car_df = car_df.loc[(car_df['model_year'] < 1960) & (car_df['price'] >= 500)]
+muscle_car_df = car_df.loc[(car_df['model_year'] >= 1960) & (car_df['model_year'] < 1980) & (car_df['price'] >= 500)]
+pre_new_car_df = car_df[(car_df['model_year'] >= 1980) & (car_df['model_year'] < 2000) & (car_df['price'] >= 500)]
+new_car_df = car_df[(car_df['model_year'] >= 2000) & (car_df['price'] >= 500)]
 
 #Group by paint color and make
 old_car_group = old_car_df.groupby(['paint_color', 'make'])['model'].count().reset_index()
